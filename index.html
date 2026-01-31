@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бесконечный раннер</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 400px;
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            background: #0f3460;
+        }
+        
+        #gameCanvas {
+            display: block;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            color: #00ff88;
+            font-size: 20px;
+            text-shadow: 0 0 5px #00ff88;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 50px;
+            z-index: 100;
+        }
+        
+        .arrow-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 3px solid #00ff88;
+            border-radius: 50%;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+        
+        .arrow-btn:active {
+            transform: scale(0.9);
+            background: rgba(0, 255, 136, 0.4);
+        }
+        
+        #speedBar {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 200px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #00ff88;
+        }
+        
+        #speedFill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #ff0080);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        #tip {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #cccccc;
+            text-align: center;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <div id="ui">
+            <div>Скорость: <span id="speedDisplay">0</span> px/сек</div>
+            <div>Пройдено: <span id="distanceDisplay">0</span> px</div>
+        </div>
+        
+        <div id="speedBar">
+            <div id="speedFill"></div>
+        </div>
+        
+        <div id="controls">
+            <button class="arrow-btn" id="leftBtn">←</button>
+            <button class="arrow-btn" id="rightBtn">→</button>
+        </div>
+        
+        <div id="tip">
+            Удерживайте кнопки для ускорения! Камера следует за человечком.
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
