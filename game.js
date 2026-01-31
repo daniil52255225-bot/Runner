@@ -9,19 +9,18 @@ const speedFill = document.getElementById('speedFill');
 // Игровые переменные
 let player = {
     x: 400, // начальная позиция по центру
-    y: 300,
+    y: 240, // выше, чтобы был виден
     width: 40,
     height: 60,
     velocityX: 0,
-    maxSpeed: 1500, // максимальная скорость (можно увеличивать)
-    acceleration: 25, // ускорение за кадр
-    friction: 0.93, // трение (медленное замедление)
+    acceleration: 30, // ускорение за кадр
+    friction: 0.97, // меньше трения для лучшего ускорения
     color: '#00ff88'
 };
 
-let cameraX = 0; // смещение камеры
+let cameraX = 0;
 let platform = {
-    segments: [], // сегменты платформы
+    segments: [],
     segmentWidth: 200,
     colors: ['#2d4059', '#4a6572', '#5b7b8a']
 };
@@ -50,19 +49,18 @@ function drawPlatform() {
     platform.segments.forEach(segment => {
         const screenX = segment.x - cameraX;
         
-        // Рисуем только видимые сегменты
         if (screenX > -platform.segmentWidth && screenX < canvas.width) {
             // Основная платформа
             ctx.fillStyle = segment.color;
             ctx.fillRect(screenX, canvas.height - segment.height, segment.width, segment.height);
             
-            // Текстура (штрихи)
+            // Текстура
             ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
             for (let i = 0; i < segment.width; i += 20) {
                 ctx.fillRect(screenX + i, canvas.height - segment.height + 5, 10, 5);
             }
             
-            // Боковые грани
+            // Граница
             ctx.strokeStyle = '#00ff88';
             ctx.lineWidth = 2;
             ctx.strokeRect(screenX, canvas.height - segment.height, segment.width, segment.height);
@@ -70,9 +68,19 @@ function drawPlatform() {
     });
 }
 
-// Рисование человечка
+// Рисование человечка (упрощенная версия)
 function drawPlayer() {
     const screenX = player.x - cameraX;
+    
+    // Ноги (движущиеся)
+    const legOffset = Math.sin(Date.now() / 100 * Math.abs(player.velocityX) * 0.01) * 15;
+    
+    // Левая нога
+    ctx.fillStyle = '#ff6600';
+    ctx.fillRect(screenX + 10, player.y + player.height, 8, 25 + legOffset);
+    
+    // Правая нога
+    ctx.fillRect(screenX + player.width - 18, player.y + player.height, 8, 25 - legOffset);
     
     // Тело
     ctx.fillStyle = player.color;
@@ -81,42 +89,42 @@ function drawPlayer() {
     // Голова
     ctx.fillStyle = '#ffcc00';
     ctx.beginPath();
-    ctx.arc(screenX + player.width/2, player.y - 10, 15, 0, Math.PI * 2);
+    ctx.arc(screenX + player.width/2, player.y - 15, 20, 0, Math.PI * 2);
     ctx.fill();
     
     // Глаза
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.arc(screenX + player.width/2 - 5, player.y - 12, 3, 0, Math.PI * 2);
-    ctx.arc(screenX + player.width/2 + 5, player.y - 12, 3, 0, Math.PI * 2);
+    ctx.arc(screenX + player.width/2 - 7, player.y - 18, 4, 0, Math.PI * 2);
+    ctx.arc(screenX + player.width/2 + 7, player.y - 18, 4, 0, Math.PI * 2);
     ctx.fill();
     
-    // Ноги при движении
-    const legOffset = Math.sin(Date.now() / 100 * Math.abs(player.velocityX) * 0.01) * 10;
-    if (Math.abs(player.velocityX) > 1) {
-        ctx.fillStyle = '#ff6600';
-        ctx.fillRect(screenX + 5, player.y + player.height, 10, 20 + legOffset);
-        ctx.fillRect(screenX + player.width - 15, player.y + player.height, 10, 20 - legOffset);
-    }
+    // Руки
+    ctx.fillStyle = '#00ff88';
+    const armOffset = Math.cos(Date.now() / 100 * Math.abs(player.velocityX) * 0.01) * 10;
+    ctx.fillRect(screenX - 5, player.y + 15, 10, 25 + armOffset);
+    ctx.fillRect(screenX + player.width - 5, player.y + 15, 10, 25 - armOffset);
     
     // Свечение при высокой скорости
-    if (Math.abs(player.velocityX) > 300) {
+    if (Math.abs(player.velocityX) > 100) {
         ctx.shadowColor = player.color;
-        ctx.shadowBlur = 20;
-        setTimeout(() => ctx.shadowBlur = 0, 50);
+        ctx.shadowBlur = 30;
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.3)';
+        ctx.fillRect(screenX - 20, player.y - 10, player.width + 40, player.height + 40);
+        ctx.shadowBlur = 0;
     }
 }
 
 // Обновление камеры
 function updateCamera() {
-    // Плавное слежение за игроком
+    // Камера следует за игроком
     cameraX = player.x - canvas.width / 2;
     
-    // Добавляем немного упреждения при высокой скорости
-    const lookAhead = player.velocityX * 0.1;
+    // Упреждение при движении
+    const lookAhead = player.velocityX * 0.15;
     cameraX += lookAhead;
     
-    // Обновляем пройденное расстояние
+    // Пройденное расстояние
     distance += Math.abs(player.velocityX) / 60;
     distanceDisplay.textContent = Math.floor(distance);
 }
@@ -138,7 +146,7 @@ rightBtn.addEventListener('touchstart', (e) => {
 });
 rightBtn.addEventListener('touchend', () => keys.right = false);
 
-// Клавиатура для тестирования на ПК
+// Клавиатура для ПК
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') keys.left = true;
     if (e.key === 'ArrowRight') keys.right = true;
@@ -151,7 +159,7 @@ document.addEventListener('keyup', (e) => {
 
 // Обновление игрового состояния
 function update() {
-    // Применяем ускорение
+    // БЕСКОНЕЧНОЕ УСКОРЕНИЕ
     if (keys.left) {
         player.velocityX -= player.acceleration;
     }
@@ -159,25 +167,26 @@ function update() {
         player.velocityX += player.acceleration;
     }
     
-    // Ограничение максимальной скорости
-    player.velocityX = Math.max(-player.maxSpeed, Math.min(player.maxSpeed, player.velocityX));
+    // Нет ограничения максимальной скорости - ускоряется бесконечно!
     
-    // Применяем трение (медленное замедление)
-    player.velocityX *= player.friction;
+    // Легкое трение только когда не нажаты кнопки
+    if (!keys.left && !keys.right) {
+        player.velocityX *= player.friction;
+    }
     
-    // Если скорость очень маленькая - останавливаем
+    // Останавливаем если скорость очень маленькая
     if (Math.abs(player.velocityX) < 0.1) player.velocityX = 0;
     
     // Обновляем позицию
     player.x += player.velocityX / 60;
     
-    // Удерживаем игрока на платформе
+    // Удерживаем на платформе
     const groundY = canvas.height - 100;
     if (player.y + player.height > groundY) {
         player.y = groundY - player.height;
     }
     
-    // Обновляем камеру
+    // Камера
     updateCamera();
     
     // Генерация новых сегментов платформы
@@ -199,14 +208,19 @@ function update() {
     // Обновление UI
     const currentSpeed = Math.abs(Math.round(player.velocityX));
     speedDisplay.textContent = currentSpeed;
-    const speedPercent = (currentSpeed / player.maxSpeed) * 100;
+    
+    // Индикатор скорости (бесконечный рост)
+    const maxDisplaySpeed = 2000; // для отображения в шкале
+    const speedPercent = Math.min(100, (currentSpeed / maxDisplaySpeed) * 100);
     speedFill.style.width = speedPercent + '%';
     
-    // Цвет скорости
-    if (currentSpeed < 300) {
+    // Меняем цвет в зависимости от скорости
+    if (currentSpeed < 500) {
         speedFill.style.background = '#00ff88';
-    } else if (currentSpeed < 700) {
+    } else if (currentSpeed < 1000) {
         speedFill.style.background = '#ffcc00';
+    } else if (currentSpeed < 1500) {
+        speedFill.style.background = '#ff6600';
     } else {
         speedFill.style.background = '#ff0080';
     }
@@ -214,11 +228,11 @@ function update() {
 
 // Отрисовка
 function draw() {
-    // Очистка с эффектом параллакса
+    // Очистка
     ctx.fillStyle = '#0a1931';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Дальние звёзды
+    // Звезды
     drawStars();
     
     // Платформа
@@ -252,12 +266,11 @@ function gameLoop() {
 generatePlatform();
 gameLoop();
 
-// Адаптация для мобильных устройств
+// Адаптация для мобильных
 window.addEventListener('resize', () => {
     const container = document.getElementById('gameContainer');
     const scale = Math.min(window.innerWidth / 800, window.innerHeight / 400);
     container.style.transform = `scale(${scale * 0.9})`;
 });
 
-// Инициализация масштаба
 window.dispatchEvent(new Event('resize'));
